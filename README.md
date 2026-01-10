@@ -8,3 +8,8 @@
 [1] Found in McQuillan et al. 2015. "Second, the hybrid zone is moving rapidly northward at a rate of approximately 10 km/decade, with P. carolinensis moving into territory historically occupied by P. atricapillus and displacing them (Bronson et al. 2003a; Reudink et al. 2007; Taylor et al. 2014a)."
 
 [2] https://www.sibleyguides.com/bird-info/black-capped-chickadee/black-capped-carolina-chickadee/
+
+# TODOs
+* Add input for an iNaturalist URL that will pull an observation's location and place it on the map
+* Update popups with more features - picture, better species name support in title, etc
+* UX improvements - hide zoom button under measure button, load more observations, hide points, etc

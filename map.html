@@ -8,62 +8,21 @@
   <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
   <script src="https://js.arcgis.com/4.34/"></script>
 
-  <!-- Load Map components from CDN-->
+  <!-- Load Map components from CDN -->
   <script type="module" src="https://js.arcgis.com/4.34/map-components/"></script>
 
-  <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-    }
-
-    #cursor_coordinates {
-      background: white;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    #topbar {
-      background: #fff;
-      padding: 10px;
-
-      position: absolute;
-      top: 30px;
-    }
-
-    .action-button {
-      font-size: 16px;
-      background-color: transparent;
-      border: 1px solid #d3d3d3;
-      color: #6e6e6e;
-      height: 32px;
-      text-align: center;
-      box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
-    }
-
-    .action-button:hover,
-    .action-button:focus {
-      background: #0079c1;
-      color: #e4e4e4;
-    }
-
-    .active {
-      background: #0079c1;
-      color: #e4e4e4;
-    }
-
-    .esri-distance-measurement-2d {
-      background-color: #fff;
-    }
-  </style>
+  <!-- Load styles -->
+  <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/css/main.css">
+  <link rel="stylesheet" href="https://js.arcgis.com/4.34/dijit/themes/claro/claro.css">
+  <link rel="stylesheet" href="./main.css" />
 </head>
 <body>
   <arcgis-map basemap="hybrid" center="-84, 37" zoom="6">
     <arcgis-zoom slot="top-left"></arcgis-zoom>
   </arcgis-map>
+
   <input type="text" id="cursor_coordinates" />
+
   <div id="topbar">
     <button
       class="action-button esri-icon-measure-line"
@@ -73,9 +32,22 @@
   </div>
 
   <script type="module">
+    // Globals
+
+    const inaturalist_observation_url = "https://www.inaturalist.org/observations/{observation_id}";
+    const viewer_id = ""; // TODO: Your iNaturalist Profile Id. Can be found in the URL by looking at your Profile
+
+    //
+
+    // Start imports
+
     const [Graphic] = await $arcgis.import(["@arcgis/core/Graphic.js"]);
     const [Extent] = await $arcgis.import(["@arcgis/core/geometry/Extent.js"]);
     const [DistanceMeasurement2D] = await $arcgis.import(["@arcgis/core/widgets/DistanceMeasurement2D.js"]);
+
+    // End imports
+
+    // Start functions
 
     /**
      * Add a point to the map
@@ -177,6 +149,13 @@
       return [latitude, longitude];
     }
 
+    /**
+     * Set active widget
+     *
+     * @param type      Type of widget to activate (only takes "distance" and null)
+     *
+     * @return null
+     */
     function setActiveWidget(type) {
       switch (type) {
         case "distance":
@@ -191,6 +170,13 @@
       }
     }
 
+    /**
+     * Set active button
+     *
+     * @param selectedButton      Button to activate
+     *
+     * @return null
+     */
     function setActiveButton(selectedButton) {
       // focus the view to activate keyboard shortcuts for sketching
       viewElement.view.focus();
@@ -203,6 +189,8 @@
         selectedButton.classList.add("active");
       }
     }
+
+    // End functions
 
     // Wait for the component to be ready before adding graphics.
     const viewElement = document.querySelector("arcgis-map");
@@ -317,9 +305,11 @@
       document.getElementById("cursor_coordinates").value = latitude.toFixed(6).toString() + ", " + longitude.toFixed(6).toString();
     });
 
-    // Start loading potential observations to ID
-    let viewer_id = "" // TODO - Fill this in
-    let response = await fetch("https://api.inaturalist.org/v1/observations?viewer_id=" + viewer_id + "&preferred_place_id=32&locale=en&ttl=-1&reviewed=false&quality_grade=needs_id&page=1&per_page=30&order_by=id&order=desc&spam=false&place_id=97394&taxon_id=144351", {
+    // Load last 30 observations to ID
+    // Some details about this API call:
+    // place_id=97394 which is North America
+    // taxon_id=144351 which is Poecile
+    let response = await fetch("https://api.inaturalist.org/v1/observations?viewer_id=" + viewer_id + "&locale=en&ttl=-1&reviewed=false&quality_grade=needs_id&page=1&per_page=30&order_by=id&order=desc&spam=false&place_id=97394&taxon_id=144351", {
       method: "GET"
     });
 
@@ -334,6 +324,10 @@
 
     let json = await response.json();
     for (let result of json.results) {
+      let species_guess = result.species_guess;
+      let id = result.id;
+      let observation_url = inaturalist_observation_url.replace("{observation_id}", id);
+
       let geojson = result.geojson;
       let coordinates = geojson.coordinates;
       let longitude = coordinates[0];
@@ -363,11 +357,13 @@
 
       let [pointGraphic, point, markerSymbol] = addPointToMap(latitude, longitude, [227, 139, 79, 0.8]);
       pointGraphic.popupTemplate = {
-        title: "Hello",
+        title: species_guess,
         content: () => {
-          var div = document.createElement('div');
-          div.innerHTML = `<p>Testing</p>`;
-          return div;
+          return `
+            <div class="custom-popup">
+              <a href="${observation_url}">View on iNaturalist</a>
+            </div>
+          `;
         },
       };
 
