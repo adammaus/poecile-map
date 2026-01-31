@@ -501,6 +501,7 @@
     let viewerIdValue = getCookieByName(viewerIdCookieName);
     if (viewerIdValue) {
       viewerId = viewerIdValue;
+      document.getElementById("viewerIdSubmit").value = viewerIdValue;
     }
 
     addContactZoneToMap();
