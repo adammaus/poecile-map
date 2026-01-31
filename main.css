@@ -4,14 +4,27 @@ body {
 	margin: 0;
 }
 
-#cursor_coordinates {
+#cursorCoordinates {
 	background: white;
 	position: absolute;
 	top: 0;
 	left: 0;
 }
 
-#topbar {
+#viewerId {
+	background: white;
+	position: absolute;
+	top: 0;
+	left: 150px;
+}
+
+#viewerIdSubmit {
+	position: absolute;
+	top: 0;
+	left: 300px;
+}
+
+#leftside {
 	background: #fff;
 	padding: 10px;
 
